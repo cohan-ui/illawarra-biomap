@@ -779,7 +779,6 @@ landmarks.forEach(lm => {
     .setLngLat(lm.coords)
     .setPopup(popup)
     .addTo(map);
-  el.addEventListener('click', e => e.stopPropagation());
 
   if (!lmMarkers[lm.type]) lmMarkers[lm.type] = [];
   lmMarkers[lm.type].push({ marker, el });
@@ -859,7 +858,6 @@ lgas.forEach(lga => {
     .setLngLat(lga.coords)
     .setPopup(popup)
     .addTo(map);
-  el.addEventListener('click', e => e.stopPropagation());
 });
 
 // Fly Over button — sweeping tour of the escarpment
