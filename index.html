@@ -438,7 +438,6 @@ const map = new maplibregl.Map({
   container: 'map',
   style: {
     version: 8,
-    glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
     sources: {
       satellite: {
         type: 'raster',
@@ -485,6 +484,9 @@ map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
 let rotating = false;
 let rotateAnimation;
 let corridorVisible = false;
+
+// Fallback: force loader off after 6 seconds regardless
+setTimeout(() => document.getElementById('loader').classList.add('hidden'), 6000);
 
 map.on('load', () => {
   // Terrain source — AWS Terrarium (free, no API key)
@@ -644,6 +646,7 @@ map.on('load', () => {
 
   // Hide loader
   document.getElementById('loader').classList.add('hidden');
+  map.once('idle', () => document.getElementById('loader').classList.add('hidden'));
 
   // Fly-in animation
   setTimeout(() => {
