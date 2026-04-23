@@ -710,17 +710,10 @@ document.getElementById('view-topo').addEventListener('click', () => {
 const lgaVisible = { wollongong: true, shellharbour: true, kiama: true };
 ['wollongong','shellharbour','kiama'].forEach(id => {
   document.getElementById('toggle-' + id).addEventListener('click', () => {
-    lgaVisible[id] = !lgaVisible[id];
-    const vis = lgaVisible[id] ? 'visible' : 'none';
-    map.setLayoutProperty('lga-fill-' + id, 'visibility', vis);
-    map.setLayoutProperty('lga-outline-' + id, 'visibility', vis);
-    const el = document.getElementById('toggle-' + id);
-    el.classList.toggle('muted', !lgaVisible[id]);
-    el.querySelector('.lga-toggle-pill').textContent = lgaVisible[id] ? 'On' : 'Off';
-    el.querySelector('.lga-toggle-pill').classList.toggle('off', !lgaVisible[id]);
-    // Auto-toggle corridor based on LGA visibility
+    setLgaVisible(id, !lgaVisible[id]);
+    // When any LGA turns on, turn off corridor
     const anyLgaOn = Object.values(lgaVisible).some(v => v);
-    setCorridorVisible(!anyLgaOn);
+    if (anyLgaOn) setCorridorVisible(false);
   });
 });
 
@@ -929,6 +922,18 @@ document.getElementById('exag-slider').addEventListener('input', (e) => {
 });
 
 // Toggle corridors
+function setLgaVisible(id, visible) {
+  lgaVisible[id] = visible;
+  const vis = visible ? 'visible' : 'none';
+  map.setLayoutProperty('lga-fill-' + id, 'visibility', vis);
+  map.setLayoutProperty('lga-outline-' + id, 'visibility', vis);
+  const el = document.getElementById('toggle-' + id);
+  el.classList.toggle('muted', !visible);
+  const pill = el.querySelector('.lga-toggle-pill');
+  pill.textContent = visible ? 'On' : 'Off';
+  pill.classList.toggle('off', !visible);
+}
+
 function setCorridorVisible(visible) {
   corridorVisible = visible;
   const vis = visible ? 'visible' : 'none';
@@ -938,6 +943,10 @@ function setCorridorVisible(visible) {
   const pill = el.querySelector('.lga-toggle-pill');
   pill.textContent = visible ? 'On' : 'Off';
   pill.classList.toggle('off', !visible);
+  // When corridor turns on, turn off all LGAs
+  if (visible) {
+    ['wollongong','shellharbour','kiama'].forEach(id => setLgaVisible(id, false));
+  }
 }
 
 document.getElementById('toggle-corridor').addEventListener('click', () => {
