@@ -946,10 +946,8 @@ function setCorridorVisible(visible) {
   const pill = el.querySelector('.lga-toggle-pill');
   pill.textContent = visible ? 'On' : 'Off';
   pill.classList.toggle('off', !visible);
-  // When corridor turns on, turn off all LGAs
-  if (visible) {
-    ['wollongong','shellharbour','kiama'].forEach(id => setLgaVisible(id, false));
-  }
+  // Corridor on → all LGAs off; Corridor off → all LGAs on
+  ['wollongong','shellharbour','kiama'].forEach(id => setLgaVisible(id, !visible));
 }
 
 document.getElementById('toggle-corridor').addEventListener('click', () => {
