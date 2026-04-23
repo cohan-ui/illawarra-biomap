@@ -258,6 +258,12 @@
   .lm-cat-toggle span { flex: 1; }
   .lm-cat-toggle.muted { opacity: 0.38; }
 
+
+  /* Force all markers above WebGL canvas layers */
+  .maplibregl-marker {
+    z-index: 10 !important;
+    pointer-events: auto !important;
+  }
   /* LGA pins */
   .lga-pin {
     display: flex; flex-direction: column; align-items: center;
@@ -550,6 +556,70 @@ map.on('load', () => {
   });
 
 
+  // LGA overlay click handlers
+  const lgaPopupData = {
+    wollongong: {
+      name: 'Wollongong',
+      council: 'Wollongong City Council',
+      color: '#42A5F5',
+      area: '68,447 ha',
+      pop: '220,000+',
+      desc: 'The largest LGA in the study. Dominated by the dramatic Illawarra Escarpment — a near-continuous ribbon of intact eucalypt forest connecting plateau to coast. Home to the Dharawal National Park and significant koala habitat.',
+      corridor: 'Wollongong contains the largest share of the BIO Map corridor network, with escarpment forests forming the core habitat spine. Priority areas include the coastal rainforest gullies, plateau heathlands and creek-line linkages that connect isolated remnants across the cleared coastal plain.'
+    },
+    shellharbour: {
+      name: 'Shellharbour',
+      council: 'Shellharbour City Council',
+      color: '#FFA726',
+      area: '14,779 ha',
+      pop: '75,000+',
+      desc: 'A predominantly coastal LGA where biodiversity corridors link fragmented bushland remnants across a highly cleared landscape. Key connections run between Macquarie Rivulet and the Bass Point coastal reserve.',
+      corridor: 'Shellharbour's corridor network is characterised by narrow, strategic linkages through an otherwise highly fragmented coastal landscape. The Macquarie Rivulet corridor and Killalea Regional Park form the primary biodiversity anchors, with investment focused on restoring connectivity between these isolated patches.'
+    },
+    kiama: {
+      name: 'Kiama',
+      council: 'Kiama Municipal Council',
+      color: '#AB47BC',
+      area: '25,891 ha',
+      pop: '22,000+',
+      desc: 'The southernmost LGA, characterised by rolling escarpment foothills, rainforest gullies, and coastal heathlands. Corridors here link the elevated plateau to lowland reserves including Minnamurra Rainforest and Killalea State Park.',
+      corridor: 'Kiama holds significant corridor values through its intact escarpment connections between Budderoo National Park and the coast. The Minnamurra and Foxground catchments support subtropical rainforest communities and provide critical habitat for the threatened Koala and Eastern Bristlebird populations on the Barren Grounds plateau.'
+    }
+  };
+
+  ['wollongong','shellharbour','kiama'].forEach(id => {
+    map.on('click', 'lga-fill-' + id, (e) => {
+      if (e.originalEvent.target.closest('.lga-pin, .lm-pin')) return;
+      const d = lgaPopupData[id];
+      new maplibregl.Popup({ maxWidth: '320px', closeButton: true, className: 'lga-popup' })
+        .setLngLat(e.lngLat)
+        .setHTML(`
+          <div class="lga-popup-header">
+            <div class="lga-popup-title">${d.name}</div>
+            <div class="lga-popup-badge" style="border-color:${d.color}40;color:${d.color};">LGA</div>
+          </div>
+          <div class="lga-stat-grid">
+            <div class="lga-stat">
+              <div class="lga-stat-val">${d.area}</div>
+              <div class="lga-stat-key">LGA Area</div>
+            </div>
+            <div class="lga-stat">
+              <div class="lga-stat-val">${d.pop}</div>
+              <div class="lga-stat-key">Population</div>
+            </div>
+          </div>
+          <div class="lga-desc">${d.desc}</div>
+          <div class="lga-desc" style="margin-top:6px;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;">
+            <span style="color:${d.color};font-size:9px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">BIO Corridor</span><br>
+            <span style="margin-top:3px;display:block;">${d.corridor}</span>
+          </div>
+        `)
+        .addTo(map);
+    });
+    map.on('mouseenter', 'lga-fill-' + id, () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'lga-fill-' + id, () => map.getCanvas().style.cursor = '');
+  });
+
   // LGA boundary layers
   lgaConfig.forEach(lga => {
     const feat = lgaData.features.find(f => f.properties.lganame === lga.name);
@@ -710,6 +780,7 @@ landmarks.forEach(lm => {
     .setLngLat(lm.coords)
     .setPopup(popup)
     .addTo(map);
+  el.addEventListener('click', e => e.stopPropagation());
 
   if (!lmMarkers[lm.type]) lmMarkers[lm.type] = [];
   lmMarkers[lm.type].push({ marker, el });
@@ -789,6 +860,7 @@ lgas.forEach(lga => {
     .setLngLat(lga.coords)
     .setPopup(popup)
     .addTo(map);
+  el.addEventListener('click', e => e.stopPropagation());
 });
 
 // Fly Over button — sweeping tour of the escarpment
