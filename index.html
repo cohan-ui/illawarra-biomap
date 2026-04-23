@@ -946,12 +946,19 @@ function setCorridorVisible(visible) {
   const pill = el.querySelector('.lga-toggle-pill');
   pill.textContent = visible ? 'On' : 'Off';
   pill.classList.toggle('off', !visible);
-  // Corridor on → all LGAs off; Corridor off → all LGAs on
-  ['wollongong','shellharbour','kiama'].forEach(id => setLgaVisible(id, !visible));
+  // Corridor turns ON → all LGAs off (always)
+  if (visible) {
+    ['wollongong','shellharbour','kiama'].forEach(id => setLgaVisible(id, false));
+  }
 }
 
 document.getElementById('toggle-corridor').addEventListener('click', () => {
-  setCorridorVisible(!corridorVisible);
+  const next = !corridorVisible;
+  setCorridorVisible(next);
+  // Corridor turns OFF via user click → restore all LGAs
+  if (!next) {
+    ['wollongong','shellharbour','kiama'].forEach(id => setLgaVisible(id, true));
+  }
 });
 </script>
 </body>
